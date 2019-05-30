@@ -41,24 +41,30 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS --model mobilenet --d
 |     Backbone      | mIoU/pixACC | Params(M) | FLOPs(G) | CPU(f) | GPU(f) |
 | :---------------: | :---------: | :-------: | :------: | :----: | :----: |
 |     mobilenet     |             |    5.31   |   4.48   |        |        |
-|    mobilenetv2    |             |    4.88   |   8.08   |        |        |
-| mobilenetv3_small |             |    1.02   |   3.03   |        |        |
-| mobilenetv3_large |             |    2.68   |   8.52   |        |        |
-
+|    mobilenetv2    |             |    4.88   |   4.04   |        |        |
+| mobilenetv3_small |             |    1.02   |   1.64   |        |        |
+| mobilenetv3_large |             |    2.68   |   4.59   |        |        |
+|     shufflenet    |             |    6.89   |   5.68   |        |        |
+|    shufflenetv2   |             |    5.24   |   4.33   |        |        |
 
 ## Support
 - [MobileNet](https://arxiv.org/abs/1704.04861)
 - [MobileNetV2](https://arxiv.org/abs/1801.04381)
 - [MobileNetV3](https://arxiv.org/abs/1905.02244)
+- [ShuffleNet](https://arxiv.org/abs/1707.01083)
+- [ShuffleNetV2](https://arxiv.org/abs/1807.11164)
 
 
 ## To Do
+- [ ] check dilation use
 - [ ] add eval
-- [ ] add shufflenet
+- [ ] add squeezenet, condensenet, shiftnet, mnasnet
 - [ ] train and eval
 
 ## References
 - [maskrcnn-benchmark](https://github.com/facebookresearch/maskrcnn-benchmark)
+- [mobilenetv3-segmentation](https://github.com/Tramac/mobilenetv3-segmentation)
+- [awesome-semantic-segmentation-pytorch](https://github.com/Tramac/awesome-semantic-segmentation-pytorch)
 
 <!--
 [![python-image]][python-url]

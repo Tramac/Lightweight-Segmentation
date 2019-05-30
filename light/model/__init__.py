@@ -2,6 +2,8 @@ import os
 from .mobilenet_seg import *
 from .mobilenetv2_seg import *
 from .mobilenetv3_seg import *
+from .shufflenet_seg import *
+from .shufflenetv2_seg import *
 
 
 def get_segmentation_model(model, **kwargs):
@@ -10,6 +12,8 @@ def get_segmentation_model(model, **kwargs):
         'mobilenetv2': get_mobilenet_v2_seg,
         'mobilenetv3_small': get_mobilenet_v3_small_seg,
         'mobilenetv3_large': get_mobilenet_v3_large_seg,
+        'shufflenet': get_shufflenet_seg,
+        'shufflenetv2': get_shufflenet_v2_seg,
     }
     return models[model](**kwargs)
 

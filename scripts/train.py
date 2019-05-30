@@ -27,7 +27,7 @@ from light.nn import MixSoftmaxCrossEntropyLoss, MixSoftmaxCrossEntropyOHEMLoss
 def parse_args():
     parser = argparse.ArgumentParser(description='Light Model for Segmentation')
     # model and dataset
-    parser.add_argument('--model', type=str, default='mobilenetv3_small',
+    parser.add_argument('--model', type=str, default='shufflenetv2',
                         help='model name (default: mobilenet)')
     parser.add_argument('--dataset', type=str, default='citys',
                         help='dataset name (default: citys)')
@@ -44,7 +44,7 @@ def parse_args():
                         help='Auxiliary loss')
     parser.add_argument('--aux-weight', type=float, default=0.4,
                         help='auxiliary loss weight')
-    parser.add_argument('--batch-size', type=int, default=1, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=4, metavar='N',
                         help='input batch size for training (default: 4)')
     parser.add_argument('--start_epoch', type=int, default=0,
                         metavar='N', help='start epochs (default:0)')
@@ -75,7 +75,7 @@ def parse_args():
                         help='save model every checkpoint-epoch')
     parser.add_argument('--log-dir', default='../runs/logs/',
                         help='Directory for saving checkpoint models')
-    parser.add_argument('--log-iter', type=int, default=1,
+    parser.add_argument('--log-iter', type=int, default=10,
                         help='print log every log-iter')
     # evaluation only
     parser.add_argument('--skip-val', action='store_true', default=False,
@@ -280,7 +280,7 @@ if __name__ == '__main__':
         synchronize()
     args.lr = args.lr * num_gpus
 
-    logger = setup_logger("mobilenetv3_segmentation", args.log_dir, get_rank(), filename='{}_{}_log.txt'.format(
+    logger = setup_logger(args.model, args.log_dir, get_rank(), filename='{}_{}_log.txt'.format(
         args.model, args.dataset))
     logger.info("Using {} GPUs".format(num_gpus))
     logger.info(args)

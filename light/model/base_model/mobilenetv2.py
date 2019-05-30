@@ -73,7 +73,7 @@ class MobileNetV2(nn.Module):
         x = self.layer4(x)
         x = self.layer5(x)
         x = self.classifier(x)
-        x = x.view(x.size(0), x.size(1))
+        x = x.view(x.size(0), -1)
         return x
 
     def _init_weight(self):

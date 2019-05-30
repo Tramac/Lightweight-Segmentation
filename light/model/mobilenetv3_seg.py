@@ -107,4 +107,4 @@ def get_mobilenet_v3_small_seg(dataset='citys', pretrained=False, root='~/.torch
 
 
 if __name__ == '__main__':
-    model = get_mobilenet_v3_large_seg()
+    model = get_mobilenet_v3_small_seg()

@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 __all__ = ['_ConvBNReLU', '_DWConvBNReLU', 'InvertedResidual', '_ASPP', '_FCNHead',
-           '_Hswish', '_ConvBNHswish', 'SEModule', 'Bottleneck']
+           '_Hswish', '_ConvBNHswish', 'SEModule', 'Bottleneck', 'ShuffleNetUnit', 'ShuffleNetV2Unit']
 
 
 class _ConvBNReLU(nn.Module):
@@ -48,7 +48,7 @@ class _DWConvBNReLU(nn.Module):
     def __init__(self, in_channels, dw_channels, out_channels, stride, dilation=1, norm_layer=nn.BatchNorm2d, **kwargs):
         super(_DWConvBNReLU, self).__init__()
         self.conv = nn.Sequential(
-            _ConvBNReLU(in_channels, dw_channels, 3, stride, dilation, dilation, dw_channels, norm_layer=norm_layer),
+            _ConvBNReLU(in_channels, dw_channels, 3, stride, dilation, dilation, in_channels, norm_layer=norm_layer),
             _ConvBNReLU(dw_channels, out_channels, 1, norm_layer=norm_layer))
 
     def forward(self, x):
@@ -238,3 +238,102 @@ class Bottleneck(nn.Module):
             return x + self.conv(x)
         else:
             return self.conv(x)
+
+
+# -----------------------------------------------------------------
+#                      For ShuffleNet
+# -----------------------------------------------------------------
+def channel_shuffle(x, groups):
+    n, c, h, w = x.size()
+
+    channels_per_group = c // groups
+    x = x.view(n, groups, channels_per_group, h, w)
+    x = torch.transpose(x, 1, 2).contiguous()
+    x = x.view(n, -1, h, w)
+
+    return x
+
+
+class ShuffleNetUnit(nn.Module):
+    def __init__(self, in_channels, out_channels, stride, groups, dilation=1, norm_layer=nn.BatchNorm2d, **kwargs):
+        super(ShuffleNetUnit, self).__init__()
+        self.stride = stride
+        self.groups = groups
+        self.dilation = dilation
+        assert stride in [1, 2, 3]
+
+        inter_channels = out_channels // 4
+
+        if stride > 1:
+            self.shortcut = nn.AvgPool2d(3, stride, 1)
+            out_channels -= in_channels
+        elif dilation > 1:
+            out_channels -= in_channels
+
+        g = 1 if in_channels == 24 else groups
+        self.conv1 = _ConvBNReLU(in_channels, inter_channels, 1, groups=g, norm_layer=norm_layer)
+        self.conv2 = _ConvBNReLU(inter_channels, inter_channels, 3, stride, dilation,
+                                 dilation, groups, norm_layer=norm_layer)
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(inter_channels, out_channels, 1, groups=groups, bias=False),
+            norm_layer(out_channels))
+
+    def forward(self, x):
+        out = self.conv1(x)
+        out = channel_shuffle(out, self.groups)
+        out = self.conv2(out)
+        out = self.conv3(out)
+        if self.stride > 1:
+            x = self.shortcut(x)
+            out = torch.cat([out, x], dim=1)
+        elif self.dilation > 1:
+            out = torch.cat([out, x], dim=1)
+        else:
+            out = out + x
+        out = F.relu(out)
+
+        return out
+
+
+# -----------------------------------------------------------------
+#                      For ShuffleNetV2
+# -----------------------------------------------------------------
+class _DWConv(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, bias=False):
+        super(_DWConv, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride,
+                              padding, dilation, groups=in_channels, bias=bias)
+
+    def forward(self, x):
+        return self.conv(x)
+
+
+class ShuffleNetV2Unit(nn.Module):
+    def __init__(self, in_channels, out_channels, stride, dilation=1, norm_layer=nn.BatchNorm2d, **kwargs):
+        super(ShuffleNetV2Unit, self).__init__()
+        assert stride in [1, 2, 3]
+        self.stride = stride
+        self.dilation = dilation
+
+        inter_channels = out_channels // 2
+
+        if (stride > 1) or (dilation > 1):
+            self.branch1 = nn.Sequential(
+                _DWConv(in_channels, in_channels, 3, stride, dilation, dilation),
+                norm_layer(in_channels),
+                _ConvBNReLU(in_channels, inter_channels, 1, norm_layer=norm_layer))
+        self.branch2 = nn.Sequential(
+            _ConvBNReLU(in_channels if (stride > 1) else inter_channels, inter_channels, 1, norm_layer=norm_layer),
+            _DWConv(inter_channels, inter_channels, 3, stride, dilation, dilation),
+            norm_layer(inter_channels),
+            _ConvBNReLU(inter_channels, inter_channels, 1, norm_layer=norm_layer))
+
+    def forward(self, x):
+        if (self.stride == 1) and (self.dilation == 1):
+            x1, x2 = x.chunk(2, dim=1)
+            out = torch.cat((x1, self.branch2(x2)), dim=1)
+        else:
+            out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
+        out = channel_shuffle(out, 2)
+
+        return out
