@@ -43,9 +43,11 @@ def get_mobilenet_seg(dataset='citys', pretrained=False, root='~/.torch/models',
                          pretrained_base=pretrained_base, **kwargs)
     if pretrained:
         from ..model import get_model_file
-        model.load_state_dict(torch.load(get_model_file('mobilenet_%s' % (acronyms[dataset]), root=root)))
+        model.load_state_dict(torch.load(get_model_file('mobilenet_%s_best_model' % (acronyms[dataset]), root=root)))
     return model
 
 
 if __name__ == '__main__':
+    from torchscope import scope
     model = get_mobilenet_seg()
+    scope(model, (3, 224, 224))

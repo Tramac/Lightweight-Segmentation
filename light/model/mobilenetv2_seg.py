@@ -63,7 +63,7 @@ def get_mobilenet_v2_seg(dataset='citys', pretrained=False, root='~/.torch/model
                            pretrained_base=pretrained_base, **kwargs)
     if pretrained:
         from ..model import get_model_file
-        model.load_state_dict(torch.load(get_model_file('mobilenet_v2_%s' % (acronyms[dataset]), root=root)))
+        model.load_state_dict(torch.load(get_model_file('mobilenet_v2_%s_best_model' % (acronyms[dataset]), root=root)))
     return model
 
 

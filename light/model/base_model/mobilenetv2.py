@@ -55,13 +55,25 @@ class MobileNetV2(nn.Module):
 
         self._init_weight()
 
+    # def _make_layer(self, block, input_channels, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
+    #     layers = list()
+    #     for t, c, n, s in block_setting:
+    #         out_channels = int(c * width_mult)
+    #         for i in range(n):
+    #             stride = s if (i == 0 and dilation == 1) else 1
+    #             layers.append(block(input_channels, out_channels, stride, t, dilation, norm_layer=norm_layer))
+    #             input_channels = out_channels
+    #     return nn.Sequential(*layers), input_channels
+
     def _make_layer(self, block, input_channels, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
         layers = list()
         for t, c, n, s in block_setting:
             out_channels = int(c * width_mult)
-            for i in range(n):
-                stride = s if (i == 0 and dilation == 1) else 1
-                layers.append(block(input_channels, out_channels, stride, t, dilation, norm_layer=norm_layer))
+            stride = s if (dilation == 1) else 1
+            layers.append(block(input_channels, out_channels, stride, t, dilation, norm_layer=norm_layer))
+            input_channels = out_channels
+            for i in range(n - 1):
+                layers.append(block(input_channels, out_channels, 1, t, 1, norm_layer=norm_layer))
                 input_channels = out_channels
         return nn.Sequential(*layers), input_channels
 

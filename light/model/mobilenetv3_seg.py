@@ -84,7 +84,8 @@ def get_mobilenet_v3_large_seg(dataset='citys', pretrained=False, root='~/.torch
                            pretrained_base=pretrained_base, **kwargs)
     if pretrained:
         import get_model_file
-        model.load_state_dict(torch.load(get_model_file('mobilenet_v3_large_%s' % (acronyms[dataset]), root=root)))
+        model.load_state_dict(
+            torch.load(get_model_file('mobilenet_v3_large_%s_best_model' % (acronyms[dataset]), root=root)))
     return model
 
 
@@ -102,7 +103,8 @@ def get_mobilenet_v3_small_seg(dataset='citys', pretrained=False, root='~/.torch
                            pretrained_base=pretrained_base, **kwargs)
     if pretrained:
         from ..model import get_model_file
-        model.load_state_dict(torch.load(get_model_file('mobilenet_v3_small_%s' % (acronyms[dataset]), root=root)))
+        model.load_state_dict(
+            torch.load(get_model_file('mobilenet_v3_small_%s_best_model' % (acronyms[dataset]), root=root)))
     return model
 
 

@@ -47,14 +47,26 @@ class MobileNet(nn.Module):
 
         self._init_weights()
 
+    # def _make_layer(self, block, input_channels, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
+    #     layers = list()
+    #     for c, n, s in block_setting:
+    #         out_channels = int(c * width_mult)
+    #         for i in range(n):
+    #             stride = s if (i == 0 and dilation == 1) else 1
+    #             dw_channels = (out_channels // 2) if i == 0 else out_channels
+    #             layers.append(block(input_channels, dw_channels, out_channels, stride, dilation, norm_layer=norm_layer))
+    #             input_channels = out_channels
+    #     return nn.Sequential(*layers), input_channels
     def _make_layer(self, block, input_channels, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
         layers = list()
         for c, n, s in block_setting:
             out_channels = int(c * width_mult)
-            for i in range(n):
-                stride = s if (i == 0 and dilation == 1) else 1
-                dw_channels = (out_channels // 2) if i == 0 else out_channels
-                layers.append(block(input_channels, dw_channels, out_channels, stride, dilation, norm_layer=norm_layer))
+            stride = s if (dilation == 1) else 1
+            layers.append(
+                block(input_channels, out_channels // 2, out_channels, stride, dilation, norm_layer=norm_layer))
+            input_channels = out_channels
+            for i in range(n - 1):
+                layers.append(block(input_channels, out_channels, out_channels, 1, 1, norm_layer=norm_layer))
                 input_channels = out_channels
         return nn.Sequential(*layers), input_channels
 

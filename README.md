@@ -38,14 +38,14 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS --model mobilenet --d
 ## Result
 - **Cityscapes**
 
-|     Backbone      | mIoU/pixACC | Params(M) | FLOPs(G) | CPU(f) | GPU(f) |
-| :---------------: | :---------: | :-------: | :------: | :----: | :----: |
-|     mobilenet     |             |    5.31   |   4.48   |        |        |
-|    mobilenetv2    |             |    4.88   |   4.04   |        |        |
-| mobilenetv3_small |             |    1.02   |   1.64   |        |        |
-| mobilenetv3_large |             |    2.68   |   4.59   |        |        |
-|     shufflenet    |             |    6.89   |   5.68   |        |        |
-|    shufflenetv2   |             |    5.24   |   4.33   |        |        |
+|     Backbone      | mIoU/pixACC | Params(M) | FLOPs(G) | CPU(fps) | GPU(fps) |
+| :---------------: | :---------: | :-------: | :------: | :------: | :------: |
+|     mobilenet     | 0.457/0.920 |    5.31   |   4.48   |          |          |
+|    mobilenetv2    | 0.459/0.924 |    4.88   |   4.04   |          |          |
+| mobilenetv3_small |             |    1.02   |   1.64   |          |          |
+| mobilenetv3_large |             |    2.68   |   4.59   |          |          |
+|     shufflenet    |             |    6.89   |   5.68   |          |          |
+|    shufflenetv2   |             |    5.24   |   4.33   |          |          |
 
 ## Support
 - [MobileNet](https://arxiv.org/abs/1704.04861)
@@ -57,7 +57,7 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS --model mobilenet --d
 
 ## To Do
 - [ ] check dilation use
-- [ ] add eval
+- [x] add eval
 - [ ] add squeezenet, condensenet, shiftnet, mnasnet
 - [ ] train and eval
 
