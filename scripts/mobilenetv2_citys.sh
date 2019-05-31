@@ -2,7 +2,7 @@
 
 # train
 CUDA_VISIBLE_DEVICES=1 python train.py --model mobilenetv2 \
-    --dataset citys --aux --ohem True --lr 1e-2
+    --dataset citys --aux --ohem True --lr 1e-2 --epochs 80
 
 # eval
 CUDA_VISIBLE_DEVICES=1 python eval.py --model mobilenetv2 \

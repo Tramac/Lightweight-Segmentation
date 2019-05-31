@@ -20,26 +20,21 @@ class MobileNet(nn.Module):
             [512, 6, 2]]
         layer5_setting = [
             [1024, 2, 2]]
-        input_channels = int(32 * width_mult) if width_mult > 1.0 else 32
-        self.conv1 = _ConvBNReLU(3, input_channels, 3, 2, 1, norm_layer=norm_layer)
+        self.in_channels = int(32 * width_mult) if width_mult > 1.0 else 32
+        self.conv1 = _ConvBNReLU(3, self.in_channels, 3, 2, 1, norm_layer=norm_layer)
 
         # building layers
-        self.layer1, input_channels = self._make_layer(_DWConvBNReLU, input_channels, layer1_setting,
-                                                       width_mult, norm_layer=norm_layer)
-        self.layer2, input_channels = self._make_layer(_DWConvBNReLU, input_channels, layer2_setting,
-                                                       width_mult, norm_layer=norm_layer)
-        self.layer3, input_channels = self._make_layer(_DWConvBNReLU, input_channels, layer3_setting,
-                                                       width_mult, norm_layer=norm_layer)
+        self.layer1 = self._make_layer(_DWConvBNReLU, layer1_setting, width_mult, norm_layer=norm_layer)
+        self.layer2 = self._make_layer(_DWConvBNReLU, layer2_setting, width_mult, norm_layer=norm_layer)
+        self.layer3 = self._make_layer(_DWConvBNReLU, layer3_setting, width_mult, norm_layer=norm_layer)
         if dilated:
-            self.layer4, input_channels = self._make_layer(_DWConvBNReLU, input_channels, layer4_setting,
-                                                           width_mult, dilation=2, norm_layer=norm_layer)
-            self.layer5, input_channels = self._make_layer(_DWConvBNReLU, input_channels, layer5_setting,
-                                                           width_mult, dilation=2, norm_layer=norm_layer)
+            self.layer4 = self._make_layer(_DWConvBNReLU, layer4_setting, width_mult,
+                                           dilation=2, norm_layer=norm_layer)
+            self.layer5 = self._make_layer(_DWConvBNReLU, layer5_setting, width_mult,
+                                           dilation=2, norm_layer=norm_layer)
         else:
-            self.layer4, input_channels = self._make_layer(_DWConvBNReLU, input_channels, layer4_setting,
-                                                           width_mult, norm_layer=norm_layer)
-            self.layer5, input_channels = self._make_layer(_DWConvBNReLU, input_channels, layer5_setting,
-                                                           width_mult, norm_layer=norm_layer)
+            self.layer4 = self._make_layer(_DWConvBNReLU, layer4_setting, width_mult, norm_layer=norm_layer)
+            self.layer5 = self._make_layer(_DWConvBNReLU, layer5_setting, width_mult, norm_layer=norm_layer)
 
         self.classifier = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
@@ -47,7 +42,7 @@ class MobileNet(nn.Module):
 
         self._init_weights()
 
-    # def _make_layer(self, block, input_channels, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
+    # def _make_layer(self, block, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
     #     layers = list()
     #     for c, n, s in block_setting:
     #         out_channels = int(c * width_mult)
@@ -55,20 +50,21 @@ class MobileNet(nn.Module):
     #             stride = s if (i == 0 and dilation == 1) else 1
     #             dw_channels = (out_channels // 2) if i == 0 else out_channels
     #             layers.append(block(input_channels, dw_channels, out_channels, stride, dilation, norm_layer=norm_layer))
-    #             input_channels = out_channels
-    #     return nn.Sequential(*layers), input_channels
-    def _make_layer(self, block, input_channels, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
+    #             self.in_channels = out_channels
+    #     return nn.Sequential(*layers)
+
+    def _make_layer(self, block, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
         layers = list()
         for c, n, s in block_setting:
             out_channels = int(c * width_mult)
             stride = s if (dilation == 1) else 1
             layers.append(
-                block(input_channels, out_channels // 2, out_channels, stride, dilation, norm_layer=norm_layer))
-            input_channels = out_channels
+                block(self.in_channels, out_channels // 2, out_channels, stride, dilation, norm_layer=norm_layer))
+            self.in_channels = out_channels
             for i in range(n - 1):
-                layers.append(block(input_channels, out_channels, out_channels, 1, 1, norm_layer=norm_layer))
-                input_channels = out_channels
-        return nn.Sequential(*layers), input_channels
+                layers.append(block(self.in_channels, out_channels, out_channels, 1, 1, norm_layer=norm_layer))
+                self.in_channels = out_channels
+        return nn.Sequential(*layers)
 
     def forward(self, x):
         x = self.conv1(x)

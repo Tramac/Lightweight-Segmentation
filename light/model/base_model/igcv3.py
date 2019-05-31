@@ -1,27 +1,26 @@
-"""MobileNetV2"""
+"""IGCV3"""
 import torch.nn as nn
 
-from light.nn import _ConvBNReLU, InvertedResidual
+from light.nn import _ConvBNReLU, InvertedIGCV3
 
-__all__ = ['MobileNetV2', 'get_mobilenet_v2', 'mobilenet_v2_1_0',
-           'mobilenet_v2_0_75', 'mobilenet_v2_0_5', 'mobilenet_v2_0_25']
+__all__ = ['IGCV3', 'get_igcv3', 'igcv3_1_0', 'igcv3_0_5', 'igcv3_0_75', 'igcv3_0_25']
 
 
-class MobileNetV2(nn.Module):
+class IGCV3(nn.Module):
     def __init__(self, num_classes=1000, width_mult=1.0, dilated=False, norm_layer=nn.BatchNorm2d, **kwargs):
-        super(MobileNetV2, self).__init__()
+        super(IGCV3, self).__init__()
         layer1_setting = [
             # t, c, n, s
             [1, 16, 1, 1]]
         layer2_setting = [
-            [6, 24, 2, 2]]
+            [6, 24, 4, 2]]
         layer3_setting = [
-            [6, 32, 3, 2]]
+            [6, 32, 6, 2]]
         layer4_setting = [
-            [6, 64, 4, 2],
-            [6, 96, 3, 1]]
+            [6, 64, 8, 2],
+            [6, 96, 6, 1]]
         layer5_setting = [
-            [6, 160, 3, 2],
+            [6, 160, 6, 2],
             [6, 320, 1, 1]]
         # building first layer
         self.in_channels = int(32 * width_mult) if width_mult > 1.0 else 32
@@ -29,17 +28,15 @@ class MobileNetV2(nn.Module):
         self.conv1 = _ConvBNReLU(3, self.in_channels, 3, 2, 1, relu6=True, norm_layer=norm_layer)
 
         # building inverted residual blocks
-        self.layer1 = self._make_layer(InvertedResidual, layer1_setting, width_mult, norm_layer=norm_layer)
-        self.layer2 = self._make_layer(InvertedResidual, layer2_setting, width_mult, norm_layer=norm_layer)
-        self.layer3 = self._make_layer(InvertedResidual, layer3_setting, width_mult, norm_layer=norm_layer)
+        self.layer1 = self._make_layer(InvertedIGCV3, layer1_setting, width_mult, norm_layer=norm_layer)
+        self.layer2 = self._make_layer(InvertedIGCV3, layer2_setting, width_mult, norm_layer=norm_layer)
+        self.layer3 = self._make_layer(InvertedIGCV3, layer3_setting, width_mult, norm_layer=norm_layer)
         if dilated:
-            self.layer4 = self._make_layer(InvertedResidual, layer4_setting, width_mult,
-                                           dilation=2, norm_layer=norm_layer)
-            self.layer5 = self._make_layer(InvertedResidual, layer5_setting, width_mult,
-                                           dilation=2, norm_layer=norm_layer)
+            self.layer4 = self._make_layer(InvertedIGCV3, layer4_setting, width_mult, dilation=2, norm_layer=norm_layer)
+            self.layer5 = self._make_layer(InvertedIGCV3, layer5_setting, width_mult, dilation=2, norm_layer=norm_layer)
         else:
-            self.layer4 = self._make_layer(InvertedResidual, layer4_setting, width_mult, norm_layer=norm_layer)
-            self.layer5 = self._make_layer(InvertedResidual, layer5_setting, width_mult, norm_layer=norm_layer)
+            self.layer4 = self._make_layer(InvertedIGCV3, layer4_setting, width_mult, norm_layer=norm_layer)
+            self.layer5 = self._make_layer(InvertedIGCV3, layer5_setting, width_mult, norm_layer=norm_layer)
 
         # building last several layers
         self.classifier = nn.Sequential(
@@ -47,8 +44,6 @@ class MobileNetV2(nn.Module):
             nn.AdaptiveAvgPool2d(1),
             nn.Dropout2d(0.2),
             nn.Conv2d(last_channels, num_classes, 1))
-
-        self._init_weight()
 
     # def _make_layer(self, block, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
     #     layers = list()
@@ -99,29 +94,29 @@ class MobileNetV2(nn.Module):
                     nn.init.zeros_(m.bias)
 
 
-def get_mobilenet_v2(width_mult=1.0, pretrained=False, root='~/.torch/models', **kwargs):
-    model = MobileNetV2(width_mult=width_mult, **kwargs)
+def get_igcv3(width_mult=1.0, pretrained=False, root='~/.torch/models', **kwargs):
+    model = IGCV3(width_mult=width_mult, **kwargs)
 
     if pretrained:
         raise ValueError("Not support pretrained")
     return model
 
 
-def mobilenet_v2_1_0(**kwargs):
-    return get_mobilenet_v2(1.0, **kwargs)
+def igcv3_1_0(**kwargs):
+    return get_igcv3(1.0, **kwargs)
 
 
-def mobilenet_v2_0_75(**kwargs):
-    return get_mobilenet_v2(0.75, **kwargs)
+def igcv3_0_75(**kwargs):
+    return get_igcv3(0.75, **kwargs)
 
 
-def mobilenet_v2_0_5(**kwargs):
-    return get_mobilenet_v2(0.5, **kwargs)
+def igcv3_0_5(**kwargs):
+    return get_igcv3(0.5, **kwargs)
 
 
-def mobilenet_v2_0_25(**kwargs):
-    return get_mobilenet_v2(0.25, **kwargs)
+def igcv3_0_25(**kwargs):
+    return get_igcv3(0.25, **kwargs)
 
 
 if __name__ == '__main__':
-    model = MobileNetV2()
+    model = igcv3_1_0()

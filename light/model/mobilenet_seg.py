@@ -48,6 +48,4 @@ def get_mobilenet_seg(dataset='citys', pretrained=False, root='~/.torch/models',
 
 
 if __name__ == '__main__':
-    from torchscope import scope
     model = get_mobilenet_seg()
-    scope(model, (3, 224, 224))

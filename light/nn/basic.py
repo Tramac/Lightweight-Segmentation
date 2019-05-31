@@ -3,7 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 __all__ = ['_ConvBNReLU', '_DWConvBNReLU', 'InvertedResidual', '_ASPP', '_FCNHead',
-           '_Hswish', '_ConvBNHswish', 'SEModule', 'Bottleneck', 'ShuffleNetUnit', 'ShuffleNetV2Unit']
+           '_Hswish', '_ConvBNHswish', 'SEModule', 'Bottleneck', 'ShuffleNetUnit',
+           'ShuffleNetV2Unit', 'InvertedIGCV3']
 
 
 class _ConvBNReLU(nn.Module):
@@ -337,3 +338,51 @@ class ShuffleNetV2Unit(nn.Module):
         out = channel_shuffle(out, 2)
 
         return out
+
+
+# -----------------------------------------------------------------
+#                      For IGCV3
+# -----------------------------------------------------------------
+class PermutationBlock(nn.Module):
+    def __init__(self, groups):
+        super(PermutationBlock, self).__init__()
+        self.groups = groups
+
+    def forward(self, x):
+        n, c, h, w = x.size()
+        x = x.view(n, self.groups, c // self.groups, h, w).permute(0, 2, 1, 3, 4).contiguous().view(n, c, h, w)
+        return x
+
+
+class InvertedIGCV3(nn.Module):
+    def __init__(self, in_channels, out_channels, stride, expand_ratio,
+                 dilation=1, norm_layer=nn.BatchNorm2d, **kwargs):
+        super(InvertedIGCV3, self).__init__()
+        assert stride in [1, 2]
+        self.use_res_connect = stride == 1 and in_channels == out_channels
+
+        layers = list()
+        inter_channels = int(round(in_channels * expand_ratio))
+        if expand_ratio != 1:
+            # pw
+            layers.append(_ConvBNReLU(in_channels, inter_channels, 1,
+                                      groups=2, relu6=True, norm_layer=norm_layer))
+            # permutation
+            layers.append(PermutationBlock(groups=2))
+        layers.extend([
+            # dw
+            _ConvBNReLU(inter_channels, inter_channels, 3, stride, dilation, dilation,
+                        groups=inter_channels, relu6=True, norm_layer=norm_layer),
+            # pw-linear
+            nn.Conv2d(inter_channels, out_channels, 1, groups=2, bias=False),
+            norm_layer(out_channels),
+            # permutation
+            PermutationBlock(groups=int(round(out_channels / 2)))
+        ])
+        self.conv = nn.Sequential(*layers)
+
+    def forward(self, x):
+        if self.use_res_connect:
+            return x + self.conv(x)
+        else:
+            return self.conv(x)

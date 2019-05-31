@@ -51,35 +51,35 @@ class MobileNetV3(nn.Module):
             raise ValueError('Unknown mode.')
 
         # building first layer
-        input_channels = int(16 * width_mult) if width_mult > 1.0 else 16
-        self.conv1 = _ConvBNHswish(3, input_channels, 3, 2, 1, norm_layer=norm_layer)
+        self.in_channels = int(16 * width_mult) if width_mult > 1.0 else 16
+        self.conv1 = _ConvBNHswish(3, self.in_channels, 3, 2, 1, norm_layer=norm_layer)
 
         # building bottleneck blocks
-        self.layer1, input_channels = self._make_layer(Bottleneck, input_channels, layer1_setting,
-                                                       width_mult, norm_layer=norm_layer)
-        self.layer2, input_channels = self._make_layer(Bottleneck, input_channels, layer2_setting,
-                                                       width_mult, norm_layer=norm_layer)
-        self.layer3, input_channels = self._make_layer(Bottleneck, input_channels, layer3_setting,
-                                                       width_mult, norm_layer=norm_layer)
+        self.layer1 = self._make_layer(Bottleneck, layer1_setting,
+                                       width_mult, norm_layer=norm_layer)
+        self.layer2 = self._make_layer(Bottleneck, layer2_setting,
+                                       width_mult, norm_layer=norm_layer)
+        self.layer3 = self._make_layer(Bottleneck, layer3_setting,
+                                       width_mult, norm_layer=norm_layer)
         if dilated:
-            self.layer4, input_channels = self._make_layer(Bottleneck, input_channels, layer4_setting,
-                                                           width_mult, dilation=2, norm_layer=norm_layer)
+            self.layer4 = self._make_layer(Bottleneck, layer4_setting,
+                                           width_mult, dilation=2, norm_layer=norm_layer)
         else:
-            self.layer4, input_channels = self._make_layer(Bottleneck, input_channels, layer4_setting,
-                                                           width_mult, norm_layer=norm_layer)
+            self.layer4 = self._make_layer(Bottleneck, layer4_setting,
+                                           width_mult, norm_layer=norm_layer)
 
         # building last several layers
         classifier = list()
         if mode == 'large':
             last_bneck_channels = int(960 * width_mult) if width_mult > 1.0 else 960
-            self.layer5 = _ConvBNHswish(input_channels, last_bneck_channels, 1, norm_layer=norm_layer)
+            self.layer5 = _ConvBNHswish(self.in_channels, last_bneck_channels, 1, norm_layer=norm_layer)
             classifier.append(nn.AdaptiveAvgPool2d(1))
             classifier.append(nn.Conv2d(last_bneck_channels, 1280, 1))
             classifier.append(_Hswish(True))
             classifier.append(nn.Conv2d(1280, nclass, 1))
         elif mode == 'small':
             last_bneck_channels = int(576 * width_mult) if width_mult > 1.0 else 576
-            self.layer5 = _ConvBNHswish(input_channels, last_bneck_channels, 1, norm_layer=norm_layer)
+            self.layer5 = _ConvBNHswish(self.in_channels, last_bneck_channels, 1, norm_layer=norm_layer)
             classifier.append(SEModule(last_bneck_channels))
             classifier.append(nn.AdaptiveAvgPool2d(1))
             classifier.append(nn.Conv2d(last_bneck_channels, 1280, 1))
@@ -91,15 +91,15 @@ class MobileNetV3(nn.Module):
 
         self._init_weights()
 
-    def _make_layer(self, block, input_channels, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
+    def _make_layer(self, block, block_setting, width_mult, dilation=1, norm_layer=nn.BatchNorm2d):
         layers = list()
         for k, exp_size, c, se, nl, s in block_setting:
-            s = 1 if dilation != 1 else s
             out_channels = int(c * width_mult)
+            stride = s if (dilation == 1) else 1
             exp_channels = int(exp_size * width_mult)
-            layers.append(block(input_channels, out_channels, exp_channels, k, s, dilation, se, nl, norm_layer))
-            input_channels = out_channels
-        return nn.Sequential(*layers), input_channels
+            layers.append(block(self.in_channels, out_channels, exp_channels, k, stride, dilation, se, nl, norm_layer))
+            self.in_channels = out_channels
+        return nn.Sequential(*layers)
 
     def forward(self, x):
         x = self.conv1(x)

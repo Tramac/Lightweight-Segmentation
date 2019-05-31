@@ -48,6 +48,4 @@ def get_shufflenet_v2_seg(dataset='citys', pretrained=False, root='~/.torch/mode
 
 
 if __name__ == '__main__':
-    from torchscope import scope
     model = get_shufflenet_v2_seg()
-    scope(model, (3, 224, 224))
