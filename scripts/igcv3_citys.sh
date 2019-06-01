@@ -2,12 +2,12 @@
 
 # train
 CUDA_VISIBLE_DEVICES=1 python train.py --model igcv3 \
-    --dataset citys --aux --ohem True --lr 1e-2 --epochs 80
+    --dataset citys --ohem False --lr 1e-2 --epochs 80
 
 # eval
 CUDA_VISIBLE_DEVICES=1 python eval.py --model igcv3 \
-    --dataset citys --aux
+    --dataset citys
 
 # fps
 CUDA_VISIBLE_DEVICES=1 python test_fps.py --model igcv3 \
-    --dataset citys --aux
+    --dataset citys

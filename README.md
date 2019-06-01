@@ -38,15 +38,15 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS --model mobilenet --d
 ## Result
 - **Cityscapes**
 
-|     Backbone      | Params(M) | FLOPs(G) | CPU(fps) | GPU(fps) | mIoU/pixACC |
-| :---------------: | :-------: | :------: | :------: | :------: | :---------: |
-|     mobilenet     |    5.31   |   4.48   |          |          | 0.457/0.920 |
-|    mobilenetv2    |    4.88   |   4.04   |          |          | 0.459/0.924 |
-| mobilenetv3_small |    1.02   |   1.64   |          |          | 0.415/0.909 |
-| mobilenetv3_large |    2.68   |   4.59   |          |          |             |
-|     shufflenet    |    6.89   |   5.68   |          |          |             |
-|    shufflenetv2   |    5.24   |   4.33   |          |          |             |
-|       igcv3       |    4.86   |   4.04   |          |          |             |
+|     Backbone      | Params(M) | FLOPs(G) | CPU(fps) | GPU(fps) | mIoU/pixACC |    Model    |
+| :---------------: | :-------: | :------: | :------: | :------: | :---------: | :---------: |
+|     mobilenet     |    5.31   |   4.48   |   0.81   |  75.61   | 0.521/0.907 | [GoogleDrive]() |
+|    mobilenetv2    |    4.88   |   4.04   |   0.49   |  48.61   | 0.540/0.931 | [GoogleDrive]() |
+| mobilenetv3_small |    1.02   |   1.64   |   2.59   |          | 0.415/0.909 | [GoogleDrive]() |
+| mobilenetv3_large |    2.68   |   4.59   |   1.39   |          |             | [GoogleDrive]() |
+|     shufflenet    |    6.89   |   5.68   |   0.57   |          |             | [GoogleDrive]() |
+|    shufflenetv2   |    5.24   |   4.33   |   0.72   |          |             | [GoogleDrive]() |
+|       igcv3       |    4.86   |   4.04   |   0.34   |          |             | [GoogleDrive]() |
 
 ## Support
 - [MobileNet](https://arxiv.org/abs/1704.04861)
@@ -58,8 +58,7 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS --model mobilenet --d
 
 
 ## To Do
-- [ ] check dilation use
-- [x] add eval
+- [ ] provide trained model
 - [ ] add squeezenet, condensenet, shiftnet, mnasnet
 - [ ] train and eval
 

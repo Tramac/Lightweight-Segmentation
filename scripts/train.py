@@ -27,7 +27,7 @@ from light.nn import MixSoftmaxCrossEntropyLoss, MixSoftmaxCrossEntropyOHEMLoss
 def parse_args():
     parser = argparse.ArgumentParser(description='Light Model for Segmentation')
     # model and dataset
-    parser.add_argument('--model', type=str, default='mobilenet',
+    parser.add_argument('--model', type=str, default='igcv3',
                         help='model name (default: mobilenet)')
     parser.add_argument('--dataset', type=str, default='citys',
                         help='dataset name (default: citys)')
