@@ -41,8 +41,8 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS --model mobilenet --d
 |     Backbone      | Params(M) | FLOPs(G) | CPU(fps) | GPU(fps) | mIoU/pixACC |    Model    |
 | :---------------: | :-------: | :------: | :------: | :------: | :---------: | :---------: |
 |     mobilenet     |    5.31   |   4.48   |   0.81   |  75.61   | 0.521/0.907 | [GoogleDrive]() |
-|    mobilenetv2    |    4.88   |   4.04   |   0.49   |  48.61   | 0.540/0.931 | [GoogleDrive]() |
-| mobilenetv3_small |    1.02   |   1.64   |   2.59   |          | 0.415/0.909 | [GoogleDrive]() |
+|    mobilenetv2    |    4.88   |   4.04   |   0.49   |  49.40   | 0.613/0.930 | [GoogleDrive]() |
+| mobilenetv3_small |    1.02   |   1.64   |   2.59   |  104.56  | 0.529/0.908 | [GoogleDrive]() |
 | mobilenetv3_large |    2.68   |   4.59   |   1.39   |          |             | [GoogleDrive]() |
 |     shufflenet    |    6.89   |   5.68   |   0.57   |          |             | [GoogleDrive]() |
 |    shufflenetv2   |    5.24   |   4.33   |   0.72   |          |             | [GoogleDrive]() |
