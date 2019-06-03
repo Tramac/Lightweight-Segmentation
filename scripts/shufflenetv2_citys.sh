@@ -2,7 +2,7 @@
 
 # train
 CUDA_VISIBLE_DEVICES=1 python train.py --model shufflenetv2 \
-    --dataset citys --ohem False --lr 1e-2 --epochs 80
+    --dataset citys --lr 1e-2 --epochs 80
 
 # eval
 CUDA_VISIBLE_DEVICES=1 python eval.py --model shufflenetv2 \

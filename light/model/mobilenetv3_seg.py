@@ -83,7 +83,7 @@ def get_mobilenet_v3_large_seg(dataset='citys', pretrained=False, root='~/.torch
     model = MobileNetV3Seg(datasets[dataset].NUM_CLASS, backbone='mobilenetv3_large',
                            pretrained_base=pretrained_base, **kwargs)
     if pretrained:
-        import get_model_file
+        from ..model import get_model_file
         model.load_state_dict(
             torch.load(get_model_file('mobilenetv3_large_%s_best_model' % (acronyms[dataset]), root=root)))
     return model

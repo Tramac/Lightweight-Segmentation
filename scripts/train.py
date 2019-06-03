@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument('--workers', '-j', type=int, default=4,
                         metavar='N', help='dataloader threads')
     # training hyper params
-    parser.add_argument('--ohem', type=bool, default=False,
+    parser.add_argument('--ohem', action='store_true', default=False,
                         help='OHEM Loss for cityscapes dataset')
     parser.add_argument('--aux', action='store_true', default=False,
                         help='Auxiliary loss')
@@ -125,11 +125,7 @@ class Trainer(object):
         # create network
         BatchNorm2d = nn.SyncBatchNorm if args.distributed else nn.BatchNorm2d
         self.model = get_segmentation_model(args.model, dataset=args.dataset,
-                                            aux=args.aux, norm_layer=BatchNorm2d)
-        if args.distributed:
-            self.model = nn.parallel.DistributedDataParallel(self.model, device_ids=[args.local_rank],
-                                                             output_device=args.local_rank)
-        self.model = self.model.to(args.device)
+                                            aux=args.aux, norm_layer=BatchNorm2d).to(self.device)
 
         # resume checkpoint if needed
         if args.resume:
@@ -159,6 +155,13 @@ class Trainer(object):
                                          warmup_factor=args.warmup_factor,
                                          warmup_iters=args.warmup_iters,
                                          warmup_method=args.warmup_method)
+
+        if args.distributed:
+            self.model = nn.parallel.DistributedDataParallel(self.model,
+                                                             device_ids=[args.local_rank],
+                                                             output_device=args.local_rank,
+                                                             find_unused_parameters=True)
+
         # evaluation metrics
         self.metric = SegmentationMetric(trainset.num_class)
 
