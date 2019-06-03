@@ -40,7 +40,7 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS eval.py --model mobil
 
 |     Backbone      | OHEM | Params(M) | FLOPs(G) | CPU(fps) | GPU(fps) | mIoU/pixACC |      Model      |
 | :---------------: | :--: | :-------: | :------: | :------: | :------: | :---------: | :-------------: |
-|     mobilenet     |  ✘   |    5.31   |   4.48   |   0.81   |  75.61   |  | [GoogleDrive]() |
+|     mobilenet     |  ✘   |    5.31   |   4.48   |   0.81   |  77.11   | 0.463/0.901 | [GoogleDrive]() |
 |     mobilenet     |  ✓   |    5.31   |   4.48   |   0.81   |  75.61   | 0.521/0.907 | [GoogleDrive]() |
 |    mobilenetv2    |  ✓   |    4.88   |   4.04   |   0.49   |  49.40   | 0.613/0.930 | [GoogleDrive]() |
 | mobilenetv3_small |  ✓   |    1.02   |   1.64   |   2.59   |  104.56  | 0.529/0.908 | [GoogleDrive]() |
@@ -48,6 +48,8 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS eval.py --model mobil
 |     shufflenet    |  ✓   |    6.89   |   5.68   |   0.57   |  43.79   | 0.493/0.901 | [GoogleDrive]() |
 |    shufflenetv2   |  ✓   |    5.24   |   4.33   |   0.72   |  57.71   | 0.528/0.914 | [GoogleDrive]() |
 |       igcv3       |  ✓   |    4.86   |   4.04   |   0.34   |  29.70   | 0.573/0.923 | [GoogleDrive]() |
+
+Note: `crop_size=768, lr=0.01, epochs=80`.
 
 ## Support
 - [MobileNet](https://arxiv.org/abs/1704.04861)
