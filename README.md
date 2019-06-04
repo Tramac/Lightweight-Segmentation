@@ -48,6 +48,7 @@ python -m torch.distributed.launch --nproc_per_node=$NGPUS eval.py --model mobil
 |     shufflenet    |  ✓   |    6.89   |   5.68   |   0.57   |  43.79   | 0.493/0.901 | [GoogleDrive]() |
 |    shufflenetv2   |  ✓   |    5.24   |   4.33   |   0.72   |  57.71   | 0.528/0.914 | [GoogleDrive]() |
 |       igcv3       |  ✓   |    4.86   |   4.04   |   0.34   |  29.70   | 0.573/0.923 | [GoogleDrive]() |
+|  efficientnet-b0  |  ✓   |    6.63   |   2.60   |   0.33   |          |             | [GoogleDrive]() |
 
 Note: `crop_size=768, lr=0.01, epochs=80`.
 
@@ -61,6 +62,8 @@ Note: `crop_size=768, lr=0.01, epochs=80`.
 
 
 ## To Do
+- [ ] optimize memory
+- [ ] check efficientnet
 - [ ] provide trained model
 - [ ] add squeezenet, condensenet, shiftnet, mnasnet
 - [x] train and eval

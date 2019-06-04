@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 __all__ = ['_ConvBNReLU', '_DWConvBNReLU', 'InvertedResidual', '_ASPP', '_FCNHead',
            '_Hswish', '_ConvBNHswish', 'SEModule', 'Bottleneck', 'ShuffleNetUnit',
-           'ShuffleNetV2Unit', 'InvertedIGCV3']
+           'ShuffleNetV2Unit', 'InvertedIGCV3', 'MBConvBlock']
 
 
 class _ConvBNReLU(nn.Module):
@@ -386,3 +386,74 @@ class InvertedIGCV3(nn.Module):
             return x + self.conv(x)
         else:
             return self.conv(x)
+
+
+# -----------------------------------------------------------------
+#                      For EfficientNet
+# -----------------------------------------------------------------
+class _Swish(nn.Module):
+    def __init__(self):
+        super(_Swish, self).__init__()
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        return x * self.sigmoid(x)
+
+
+class SEModuleV2(nn.Module):
+    def __init__(self, in_channels, se_ratio=0.25):
+        super(SEModuleV2, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        se_channels = max(1, int(in_channels * se_ratio))
+        self.fc = nn.Sequential(
+            nn.Conv2d(in_channels, se_channels, 1, bias=False),
+            _Swish(),
+            nn.Conv2d(se_channels, in_channels, 1, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        n, c, _, _ = x.size()
+        out = self.avg_pool(x)
+        out = self.fc(out)
+        return x * out.expand_as(x)
+
+
+class MBConvBlock(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, expand_ratio,
+                 dilation=1, se_ratio=0.25, drop_connect_rate=0.2, norm_layer=nn.BatchNorm2d, **kwargs):
+        super(MBConvBlock, self).__init__()
+        assert stride in [1, 2]
+        self.use_res_connect = stride == 1 and in_channels == out_channels
+        self.drop_connect_rate = drop_connect_rate
+        use_se = (se_ratio is not None) and (0 < se_ratio <= 1.)
+        if use_se:
+            SELayer = SEModuleV2
+        else:
+            SELayer = Identity
+
+        layers = list()
+        inter_channels = int(round(in_channels * expand_ratio))
+        if expand_ratio != 1:
+            layers.append(_ConvBNHswish(in_channels, inter_channels, 1, norm_layer=norm_layer))
+        layers.extend([
+            # dw
+            _ConvBNHswish(inter_channels, inter_channels, kernel_size, stride, kernel_size // 2 * dilation, dilation,
+                          groups=inter_channels, norm_layer=norm_layer),  # check act function
+            SELayer(inter_channels, se_ratio),
+            # pw-linear
+            nn.Conv2d(inter_channels, out_channels, 1, bias=False),
+            norm_layer(out_channels)
+        ])
+        self.conv = nn.Sequential(*layers)
+
+        if drop_connect_rate:
+            self.dropout = nn.Dropout2d(drop_connect_rate)
+
+    def forward(self, x):
+        out = self.conv(x)
+        if self.use_res_connect:
+            if self.drop_connect_rate:
+                out = self.dropout(out)
+            out = x + out
+        return out

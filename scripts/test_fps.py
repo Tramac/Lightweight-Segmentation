@@ -36,7 +36,7 @@ def compute_fps(args):
         for i in range(10):
             start_time = time.time()
             for n in range(N):
-                print("run: {}/{}".format(n + 1, i + 1))
+                # print("run: {}/{}".format(n + 1, i + 1))
                 out = model(x)
             fpss.append(N / (time.time() - start_time))
         fps = np.mean(fpss)

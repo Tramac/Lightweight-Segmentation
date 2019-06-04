@@ -2,7 +2,7 @@
 import torch.nn as nn
 
 from light.model.base_model import mobilenet1_0, mobilenet_v2_1_0, mobilenet_v3_small_1_0, mobilenet_v3_large_1_0, \
-    shufflenet_g8, shufflenet_v2_2_0, igcv3_1_0
+    shufflenet_g8, shufflenet_v2_2_0, igcv3_1_0, efficientnet_b0
 
 
 class BaseModel(nn.Module):
@@ -26,18 +26,23 @@ class BaseModel(nn.Module):
             self.pretrained = shufflenet_v2_2_0(dilated=True, pretrained=pretrained_base, **kwargs)
         elif backbone == 'igcv3':
             self.pretrained = igcv3_1_0(dilated=True, pretrained=pretrained_base, **kwargs)
+        elif backbone == 'efficientnet':
+            self.pretrained = efficientnet_b0(dilated=True, pretrained=pretrained_base, **kwargs)
         else:
             raise RuntimeError("Unknown backnone: {}".format(backbone))
 
     def base_forward(self, x):
         """forwarding pre-trained network"""
-        if self.backbone in ['mobilenet', 'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large', 'igcv3']:
+        if self.backbone in ['mobilenet', 'mobilenetv2', 'mobilenetv3_small', 'mobilenetv3_large', 'igcv3',
+                             'efficientnet']:
             x = self.pretrained.conv1(x)
             x = self.pretrained.layer1(x)
             c1 = self.pretrained.layer2(x)
             c2 = self.pretrained.layer3(c1)
             c3 = self.pretrained.layer4(c2)
             c4 = self.pretrained.layer5(c3)
+            if self.backbone == 'efficientnet':
+                c4 = self.pretrained.layer6(c4)
         elif self.backbone in ['shufflenet', 'shufflenetv2']:
             x = self.pretrained.conv1(x)
             c1 = self.pretrained.maxpool(x)
