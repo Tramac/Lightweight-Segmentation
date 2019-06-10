@@ -21,7 +21,7 @@ from light.utils.lr_scheduler import WarmupPolyLR
 from light.utils.metric import SegmentationMetric
 from light.data import get_segmentation_dataset
 from light.model import get_segmentation_model
-from light.nn import MixSoftmaxCrossEntropyLoss, MixSoftmaxCrossEntropyOHEMLoss
+from light.nn import MixSoftmaxCrossEntropyLoss, MixSoftmaxCrossEntropyOHEMLoss;
 
 
 def parse_args():

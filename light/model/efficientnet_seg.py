@@ -47,6 +47,4 @@ def get_efficientnet_seg(dataset='citys', pretrained=False, root='~/.torch/model
 
 
 if __name__ == '__main__':
-    from torchscope import scope
     model = get_efficientnet_seg()
-    scope(model, (3, 224, 224))
